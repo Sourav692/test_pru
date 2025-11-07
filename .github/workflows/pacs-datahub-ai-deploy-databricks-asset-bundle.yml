@@ -65,7 +65,10 @@ jobs:
 
       - name: Deploy Databricks Asset Bundle
         run: |
-          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+          mkdir -p ~/.databricks/bin
+          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh -s -- -b ~/.databricks/bin
+          echo "$HOME/.databricks/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.databricks/bin:$PATH"
           databricks -v          
     ### end of software setup required      
       - name: Authenticate with Databricks
@@ -99,8 +102,14 @@ jobs:
             ls -lrt   
             echo '----------End Of Listing the template file-------------------'
             cat ./databricks.yml
-            sed -i "s/ name: .*/name: ${{ inputs.PROJECT_NAME }}/" databricks.yml
-            sed -i "s/Workflows\/commons.*/Workflows\/${DEPLOYMENT_ENVIRONMENT}\-commons\/\*\.yml/" databricks.yml
+            # macOS (BSD sed) requires -i '' while Linux (GNU sed) uses -i
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+              sed -i '' "s/ name: .*/name: ${{ inputs.PROJECT_NAME }}/" databricks.yml
+              sed -i '' "s/Workflows\/commons.*/Workflows\/${DEPLOYMENT_ENVIRONMENT}\-commons\/\*\.yml/" databricks.yml
+            else
+              sed -i "s/ name: .*/name: ${{ inputs.PROJECT_NAME }}/" databricks.yml
+              sed -i "s/Workflows\/commons.*/Workflows\/${DEPLOYMENT_ENVIRONMENT}\-commons\/\*\.yml/" databricks.yml
+            fi
             echo '----------Display the final template file-------------------'
             cat ./databricks.yml
             echo '----------End Of Display the final template file-------------------'
