@@ -1,0 +1,47 @@
+name: Caller Workflow
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+
+jobs:
+    ## move the secrets to org level , remove from repo level
+    call-main:
+      if: github.ref == 'refs/heads/main'
+      uses: ./.github/workflows/pacs-datahub-ai-deploy-databricks-asset-bundle.yml
+      with:
+        ENVIRONMENT: prod
+        PROJECT_NAME: pacs-743-ai_engineering_feature_engineering
+        FOLDER_NAME: /Workspace/Shared/ai_engineering_feature_engineering
+        RUNNER: prod-runner
+      secrets:
+              TOKEN: dapid9852faaf1b2660172f742675a7ee278
+              HOST : https://adb-6606049009534411.11.azuredatabricks.net/
+              GIT_TOKEN : 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
+
+    call-develop:
+      if: github.ref == 'refs/heads/develop'
+      uses: ./.github/workflows/pacs-datahub-ai-deploy-databricks-asset-bundle.yml
+      with:
+        ENVIRONMENT: dev
+        PROJECT_NAME: p${var.project_name}
+        FOLDER_NAME: /Workspace/${var.project_name}
+        RUNNER: prod-runner
+      secrets:
+              TOKEN: dapid9852faaf1b2660172f742675a7ee278
+              HOST : https://adb-6606049009534411.11.azuredatabricks.net/
+              GIT_TOKEN : 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
+    call-feature:
+      if: github.ref == 'refs/heads/feature/gitops_setup'
+      uses: ./.github/workflows/pacs-datahub-ai-deploy-databricks-asset-bundle.yml
+      with:
+        ENVIRONMENT: dev
+        PROJECT_NAME: ${var.project_name}
+        FOLDER_NAME: /Workspace/${var.project_name}
+        RUNNER: prod-runner
+      secrets:
+              TOKEN: dapid9852faaf1b2660172f742675a7ee278
+              HOST : https://adb-6606049009534411.11.azuredatabricks.net/
+              GIT_TOKEN : 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
